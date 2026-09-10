@@ -71,6 +71,12 @@ h1{font:var(--t-display);margin:6px 0 0;letter-spacing:-.015em}
  padding:14px 15px;display:grid;gap:13px;
  grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
 .panel[hidden]{display:none}
+.phead{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+ gap:12px;font:var(--t-micro);color:var(--muted)}
+.pclose{font:var(--t-label);color:var(--ink);background:var(--surface-2);
+ border:1px solid var(--line);border-radius:999px;padding:7px 15px;cursor:pointer}
+.pclose:hover{background:var(--line)}
+.pclose:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .fld{display:flex;flex-direction:column;gap:5px;min-width:0}
 .fld label{font:var(--t-micro);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
 .fld select{font:var(--t-label);padding:9px 8px;border-radius:4px;
@@ -167,6 +173,10 @@ a{color:var(--accent)}
   </div>
 
   <div class="panel" id="panel" hidden>
+    <div class="phead">
+      <span class="u">Custom search</span>
+      <button type="button" class="pclose" id="pclose">Close</button>
+    </div>
     <div class="fld">
       <label for="f-source">Rescue</label>
       <select id="f-source"><option value="">Any</option></select>
@@ -443,10 +453,17 @@ document.querySelectorAll('[data-preset]').forEach(p=>{
 });
 
 [...CONTROLS,...CHECKS].forEach(id => $(id).addEventListener('change', render));
-$('toggle').addEventListener('click',()=>{
-  const open = $('panel').hidden;
+function setPanel(open){
   $('panel').hidden = !open;
   $('toggle').setAttribute('aria-expanded', String(open));
+  // On a phone the panel fills the screen, so closing it should put you back
+  // where the results are rather than at whatever you had scrolled past.
+  if(!open) $('toggle').scrollIntoView({block:'nearest'});
+}
+$('toggle').addEventListener('click',()=> setPanel($('panel').hidden));
+$('pclose').addEventListener('click',()=> setPanel(false));
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && !$('panel').hidden) setPanel(false);
 });
 
 // restore last session's filters, else open on whatever is most useful today

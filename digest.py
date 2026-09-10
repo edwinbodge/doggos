@@ -195,18 +195,46 @@ def chips_for(d: Dog) -> str:
     return "".join(out)
 
 
+# Gmail, Apple Mail and Outlook mobile all honour a <style> block with media
+# queries. Anything that strips it falls back to the desktop table, which is
+# what shipped before — degraded, not broken.
+EMAIL_CSS = """
+  a{text-decoration:none}
+  @media only screen and (max-width:480px){
+    .wrap{padding:14px 8px!important}
+    /* The width="600" attribute beats max-width on a narrow viewport, so the
+       card has to be pulled back to the screen explicitly or it overflows. */
+    .wrap{width:100%!important}
+    .card{width:100%!important; padding:20px 16px!important; border-radius:0!important}
+    /* Stack the two cells: photo full width, everything else beneath it. */
+    .dcell{display:block!important; width:100%!important; padding-right:0!important}
+    .dphoto{padding:0 0 10px 0!important}
+    .dtext{padding:0 0 28px 0!important}
+    .dimg{width:100%!important; height:auto!important; max-width:100%!important;
+          aspect-ratio:4/3; object-fit:cover}
+    .hero{font-size:24px!important}
+  }
+"""
+
+
 def dog_row(d: Dog, first_seen: dict[str, str] | None = None) -> str:
-    """One dog as an email-safe table row."""
+    """One dog as an email-safe table row.
+
+    Two cells side by side on desktop. The classes are what the mobile
+    breakpoint in EMAIL_CSS hooks onto to stack them — photo full width, text
+    underneath — matching how the website behaves on a phone.
+    """
     meta = meta_line(d, first_seen)
-    img = (f'<img src="{html.escape(d.photo)}" width="132" height="99" alt="{html.escape(d.name)}"'
+    img = (f'<img class="dimg" src="{html.escape(d.photo)}" width="132" height="99"'
+           f' alt="{html.escape(d.name)}"'
            f' style="display:block;border-radius:5px;object-fit:cover;'
            f'width:132px;height:99px;border:1px solid {LINE};">') if d.photo else ""
     return f"""
   <tr>
-    <td width="132" valign="top" style="padding:0 14px 22px 0;">
+    <td class="dcell dphoto" width="132" valign="top" style="padding:0 14px 22px 0;">
       <a href="{html.escape(d.url)}" style="text-decoration:none;">{img}</a>
     </td>
-    <td valign="top" style="padding:0 0 22px 0;">
+    <td class="dcell dtext" valign="top" style="padding:0 0 22px 0;">
       <a href="{html.escape(d.url)}" style="font:{T_TITLE};color:{INK};
          text-decoration:none;">{html.escape(d.name)}</a>
       <span style="font:{T_MICRO};color:{MUTED};letter-spacing:.09em;
@@ -249,18 +277,24 @@ def build_email(new: list[Dog], picks: list[Dog], labs: list[Dog],
                f'color:#fff;font:{T_LABEL};padding:11px 16px;border-radius:4px;'
                f'text-decoration:none;">Browse all {total} dogs →</a>') if site else ""
 
-    return f"""<!doctype html><html><body style="margin:0;background:#F6F5F0;">
+    return f"""<!doctype html><html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>{EMAIL_CSS}</style>
+</head>
+<body style="margin:0;background:#F6F5F0;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-  style="background:#F6F5F0;padding:26px 14px;">
+  class="wrap" style="background:#F6F5F0;padding:26px 14px;">
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
-  style="max-width:600px;background:#fff;border:1px solid {LINE};border-radius:6px;
-  padding:26px 24px;">
+  class="card" style="max-width:600px;background:#fff;border:1px solid {LINE};
+  border-radius:6px;padding:26px 24px;">
 
   <tr><td style="padding-bottom:6px;">
     <div style="font:{T_MICRO};color:{MUTED};
       letter-spacing:.14em;text-transform:uppercase;">{today}</div>
-    <div style="font:{T_DISPLAY};color:{INK};margin:8px 0 16px;">
+    <div class="hero" style="font:{T_DISPLAY};color:{INK};margin:8px 0 16px;">
       {len(new)} new doggo{'' if len(new)==1 else 's'} for you</div>
     {cta_top}
   </td></tr>
