@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doggos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#F6F5F0;--surface:#FFF;--surface-2:#EFEEE7;
+  --ink:#1B1E19;--ink-2:#4A5147;--muted:#767D71;
+  --line:#DFDDD3;--line-soft:#E9E7DE;
+  --accent:#2C6A4B;--accent-ink:#FFF;--accent-bg:#E6F0E9;
+  --flag:#A34A18;--flag-bg:#F7E9E0;
+  --star:#8A6A1F;--star-bg:#F4EDDA;
+  --shadow:0 1px 2px rgba(27,30,25,.06),0 8px 24px -12px rgba(27,30,25,.18);
+
+  /* Two families, five roles. Serif names the dogs; sans does everything else.
+     Numbers use tabular-nums instead of a third, monospace family. */
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --t-display:600 clamp(28px,5vw,38px)/1.08 var(--serif);
+  --t-title:600 19px/1.2 var(--serif);
+  --t-body:400 14px/1.5 var(--sans);
+  --t-label:500 13px/1.35 var(--sans);
+  --t-micro:500 11px/1 var(--sans);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#14170F;--surface:#1D2119;--surface-2:#242920;
+  --ink:#ECEEE5;--ink-2:#BDC3B6;--muted:#8D9486;
+  --line:#333A2D;--line-soft:#2A3025;
+  --accent:#7FC79A;--accent-ink:#10160E;--accent-bg:#1E2C22;
+  --flag:#E29068;--flag-bg:#33231A;
+  --star:#D8B45E;--star-bg:#2E2717;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --ground:#14170F;--surface:#1D2119;--surface-2:#242920;
+  --ink:#ECEEE5;--ink-2:#BDC3B6;--muted:#8D9486;
+  --line:#333A2D;--line-soft:#2A3025;
+  --accent:#7FC79A;--accent-ink:#10160E;--accent-bg:#1E2C22;
+  --flag:#E29068;--flag-bg:#33231A;
+  --star:#D8B45E;--star-bg:#2E2717;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+ font:var(--t-body);font-variant-numeric:tabular-nums;
+ padding:30px 18px 70px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+/* the one modifier: micro set in caps, for eyebrows / section heads / badges */
+.u{text-transform:uppercase;letter-spacing:.09em}
+.eyebrow{font:var(--t-micro);letter-spacing:.14em;
+ text-transform:uppercase;color:var(--muted)}
+h1{font:var(--t-display);margin:6px 0 0;letter-spacing:-.015em}
+.mast{border-bottom:1px solid var(--line);padding-bottom:18px}
+
+/* ---------- filter bar ---------- */
+.bar{position:sticky;top:0;z-index:30;background:var(--ground);
+ padding:10px 0 12px;margin:-10px 0 0;display:flex;flex-direction:column;gap:10px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{font:var(--t-label);padding:10px 14px;border-radius:999px;
+ border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pill b{font-weight:600;opacity:.7;margin-left:4px}
+.pill.ghost{background:none;border-style:dashed}
+.count{font:var(--t-label);color:var(--muted);margin-left:auto;white-space:nowrap}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;
+ padding:14px 15px;display:grid;gap:13px;
+ grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
+.panel[hidden]{display:none}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fld label{font:var(--t-micro);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.fld select{font:var(--t-label);padding:9px 8px;border-radius:4px;
+ border:1px solid var(--line);background:var(--surface-2);color:var(--ink);width:100%}
+.fld select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.checks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px}
+.chk{display:inline-flex;align-items:center;gap:6px;font:var(--t-label);
+ padding:8px 11px;border:1px solid var(--line);border-radius:999px;
+ background:var(--surface-2);color:var(--ink-2);cursor:pointer}
+.chk input{margin:0;accent-color:var(--accent)}
+.chk:has(input:checked){background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.chk:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:5px;
+ overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card.isnew{border-color:var(--accent)}
+.gal{position:relative;aspect-ratio:4/3;background:var(--surface-2);overflow:hidden;touch-action:pan-y}
+.gal img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;
+ transition:opacity .2s}
+.gal img.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.gal img{transition:none}}
+.badge{position:absolute;top:8px;z-index:3;font:var(--t-micro);
+ letter-spacing:.09em;text-transform:uppercase;color:#fff;background:rgba(20,23,15,.78);
+ padding:5px 7px;border-radius:3px}
+.badge.src{left:8px}.badge.count2{right:8px}
+.badge.new{left:8px;top:auto;bottom:8px;background:var(--accent);color:var(--accent-ink)}
+.nav{position:absolute;top:0;bottom:24px;width:42%;z-index:2;border:0;background:none;
+ cursor:pointer;padding:0;color:#fff;opacity:0;transition:opacity .15s}
+.nav.prev{left:0}.nav.next{right:0}
+.gal:hover .nav,.gal:focus-within .nav{opacity:1}
+.nav span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+ background:rgba(20,23,15,.62);font-size:15px;margin:0 8px}
+.nav.next span{margin-left:auto}
+.nav:focus-visible{opacity:1;outline:2px solid #fff;outline-offset:-4px}
+.dots{position:absolute;left:0;right:0;bottom:7px;z-index:3;display:flex;
+ justify-content:center;gap:5px;pointer-events:none}
+.dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.45);
+ box-shadow:0 0 2px rgba(0,0,0,.5)}
+.dots i.on{background:#fff;width:14px;border-radius:3px}
+.gal[data-single="1"] .nav,.gal[data-single="1"] .dots,.gal[data-single="1"] .count2{display:none}
+.body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:8px;flex:1}
+.name{font:var(--t-title);margin:0;letter-spacing:-.01em}
+.facts{font:var(--t-label);color:var(--ink-2);
+ display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px}
+.facts span:first-child{color:var(--ink)}
+.facts i{font-style:normal;color:var(--line);user-select:none}
+.listed{font:var(--t-micro);color:var(--muted);display:flex;align-items:center;gap:5px}
+.listed b{font-weight:500;color:var(--ink-2)}
+.breed{font:var(--t-body);color:var(--muted);margin:0}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font:var(--t-micro);padding:5px 7px;border-radius:3px;
+ background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-soft)}
+.tag.good{background:var(--accent-bg);color:var(--accent);border-color:transparent}
+.tag.warn{background:var(--flag-bg);color:var(--flag);border-color:transparent}
+.tag.flex{background:var(--star-bg);color:var(--star);border-color:transparent}
+.tag.none{opacity:.7;font-style:italic}
+.foot{margin-top:auto;display:flex;align-items:center;gap:10px}
+.go{font:var(--t-label);text-decoration:none;color:var(--accent-ink);
+ background:var(--accent);padding:9px 13px;border-radius:3px}
+.hide{margin-left:auto;border:1px solid var(--line);background:var(--surface-2);
+ width:34px;height:34px;border-radius:50%;cursor:pointer;display:grid;place-items:center;
+ color:var(--muted);padding:0}
+.hide:hover{color:var(--ink);border-color:var(--muted)}
+.hide:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hide svg{width:17px;height:17px;display:block}
+.card.hidden{opacity:.42}
+.card.hidden .hide{background:var(--flag-bg);color:var(--flag);border-color:transparent}
+.card.hidden:hover{opacity:.72}
+.go:hover{filter:brightness(1.08)}
+.go:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.empty{font:var(--t-body);color:var(--muted);padding:26px 0}
+footer{border-top:1px solid var(--line);padding-top:16px;font:var(--t-body);color:var(--muted)}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">Updated __UPDATED__</div>
+  <h1>Doggos</h1>
+</header>
+
+<div class="bar">
+  <div class="pills" id="presets">
+    <button class="pill" data-preset="week"    aria-pressed="false">New this week <b></b></button>
+    <button class="pill" data-preset="fit"     aria-pressed="true">Closest fit <b></b></button>
+    <button class="pill" data-preset="labs"    aria-pressed="false">Top labs <b></b></button>
+    <button class="pill" data-preset="all"     aria-pressed="false">All dogs <b></b></button>
+    <button class="pill ghost" id="toggle" aria-expanded="false">Custom search</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="panel" id="panel" hidden>
+    <div class="fld">
+      <label for="f-source">Rescue</label>
+      <select id="f-source"><option value="">Any</option></select>
+    </div>
+    <div class="fld">
+      <label for="f-weight">Max weight</label>
+      <select id="f-weight">
+        <option value="">Any</option>
+        <option value="30">30 lb or less</option>
+        <option value="40">40 lb or less</option>
+        <option value="50">50 lb or less</option>
+        <option value="60">60 lb or less</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label for="f-age">Max age</label>
+      <select id="f-age">
+        <option value="">Any</option>
+        <option value="1">Under 1 year</option>
+        <option value="2">2 years or younger</option>
+        <option value="3">3 years or younger</option>
+        <option value="5">5 years or younger</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label for="f-sex">Sex</label>
+      <select id="f-sex"><option value="">Any</option>
+        <option value="female">Female</option><option value="male">Male</option></select>
+    </div>
+    <div class="fld">
+      <label for="f-listed">Listed</label>
+      <select id="f-listed">
+        <option value="">Any time</option>
+        <option value="7">Last 7 days</option>
+        <option value="14">Last 14 days</option>
+        <option value="30">Last 30 days</option>
+      </select>
+    </div>
+    <div class="checks">
+      <label class="chk"><input type="checkbox" id="c-kids">Good with kids</label>
+      <label class="chk"><input type="checkbox" id="c-dogs">Good with dogs</label>
+      <label class="chk"><input type="checkbox" id="c-house">Housetrained</label>
+      <label class="chk"><input type="checkbox" id="c-crate">Crate-trained</label>
+      <label class="chk"><input type="checkbox" id="c-flex">Foster-to-adopt</label>
+      <label class="chk"><input type="checkbox" id="c-lab">Labs only</label>
+      <label class="chk"><input type="checkbox" id="c-clean">Hide dogs with warnings</label>
+    </div>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" hidden>Nothing matches these filters.</div>
+
+<footer>Pulled from each rescue's own feed.</footer>
+
+</div>
+
+<script>
+const DOGS = /*__DATA__*/[];
+const NEW_DAYS = +"__NEWDAYS__" || 7;
+const MAX_LB = 60, MAX_YR = 5, PUPPY_YR = 1;
+
+const $ = id => document.getElementById(id);
+const EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+ stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+ <path d="M1.6 12S5.3 5.2 12 5.2 22.4 12 22.4 12 18.7 18.8 12 18.8 1.6 12 1.6 12Z"/>
+ <circle cx="12" cy="12" r="3.1"/></svg>`;
+const EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+ stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+ <path d="M9.9 5.4A9.6 9.6 0 0 1 12 5.2c6.7 0 10.4 6.8 10.4 6.8a18 18 0 0 1-3.3 4.3M6.2 6.3A18 18 0 0 0 1.6 12S5.3 18.8 12 18.8a9.4 9.4 0 0 0 4-.9"/>
+ <path d="M9.9 9.9a3.1 3.1 0 0 0 4.3 4.3"/><path d="M2.5 2.5l19 19"/></svg>`;
+const CLOCK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+ stroke-linecap="round" width="13" height="13" aria-hidden="true" style="flex:none">
+ <circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>`;
+
+// Hidden dogs live in this browser only, so Edwin and Elizabeth each keep
+// their own list. Hidden cards drop to the end rather than disappearing.
+const HKEY = 'doggos.hidden';
+let hidden = new Set();
+try { hidden = new Set(JSON.parse(localStorage.getItem(HKEY) || '[]')); } catch(e) {}
+const saveHidden = () => { try { localStorage.setItem(HKEY, JSON.stringify([...hidden])); } catch(e) {} };
+const dogId = d => `${d.s}:${d.n}:${d.u}`;
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const daysAgo = iso => {
+  if(!iso) return Infinity;
+  const t = Date.parse(iso + "T00:00:00");
+  return isNaN(t) ? Infinity : (Date.now() - t) / 86400000;
+};
+
+// A small dog under a year still has growing to do, so it stays in range.
+function sizeOk(d, cap){
+  if(d.lb != null) return d.lb <= cap;
+  const b = (d.bucket || "").toLowerCase();
+  if(b.startsWith("medium")) return cap >= 50;
+  if(b.startsWith("small"))  return cap >= 30 || (d.yr != null && d.yr < PUPPY_YR);
+  return false;
+}
+function ageOk(d, cap){
+  if(d.yr != null) return d.yr <= cap;
+  const a = d.f.join(" ").toLowerCase();
+  if(/senior/.test(a)) return false;
+  return cap >= MAX_YR;              // a band is only good enough for a loose cap
+}
+
+const CONTROLS = ["f-source","f-weight","f-age","f-sex","f-listed"];
+const CHECKS   = ["c-kids","c-dogs","c-house","c-crate","c-flex","c-lab","c-clean"];
+
+function readFilters(){
+  const f = {};
+  CONTROLS.forEach(id => f[id] = $(id).value);
+  CHECKS.forEach(id => f[id] = $(id).checked);
+  return f;
+}
+function applyFilters(f){
+  CONTROLS.forEach(id => $(id).value = f[id] ?? "");
+  CHECKS.forEach(id => $(id).checked = !!f[id]);
+}
+
+const PRESETS = {
+  week: {"f-listed": String(NEW_DAYS)},
+  fit:  {"f-weight": String(MAX_LB), "f-age": String(MAX_YR), "c-clean": true},
+  labs: {"f-weight": String(MAX_LB), "f-age": String(MAX_YR), "c-clean": true, "c-lab": true},
+  all:  {},
+};
+
+function matches(d, f){
+  if(f["f-source"] && d.s !== f["f-source"]) return false;
+  if(f["f-weight"] && !sizeOk(d, +f["f-weight"])) return false;
+  if(f["f-age"]    && !ageOk(d, +f["f-age"]))     return false;
+  if(f["f-sex"]    && (d.sex||"").toLowerCase() !== f["f-sex"]) return false;
+  if(f["f-listed"] && daysAgo(d.seen) > +f["f-listed"]) return false;
+  const has = t => d.g.some(x => x.toLowerCase().includes(t));
+  if(f["c-kids"]  && !has("kids"))         return false;
+  if(f["c-dogs"]  && !has("dogs"))         return false;
+  if(f["c-house"] && !has("housetrained")) return false;
+  if(f["c-crate"] && !has("crate"))        return false;
+  if(f["c-flex"]  && !has("foster"))       return false;
+  if(f["c-lab"]   && !d.lab)               return false;
+  if(f["c-clean"] && d.w.length)           return false;
+  return true;
+}
+
+const score = d => (d.g.length * 2) + (d.new ? 1 : 0);
+const order = (a,b) => (hidden.has(dogId(a)) - hidden.has(dogId(b))) || (score(b) - score(a));
+
+function card(d){
+  const id = dogId(d);
+  const el = document.createElement('article');
+  el.className = 'card' + (d.new ? ' isnew' : '') + (hidden.has(id) ? ' hidden' : '');
+  const tags = [
+    ...d.g.map(t => `<span class="tag ${/kids|dogs/i.test(t)?'good':(/foster/i.test(t)?'flex':'')}">${esc(t)}</span>`),
+    ...d.w.map(t => `<span class="tag warn">${esc(t)}</span>`),
+    ...(d.i||[]).map(t => `<span class="tag">${esc(t)}</span>`)
+  ];
+  if(!tags.length) tags.push('<span class="tag none">traits not listed</span>');
+
+  el.innerHTML = `
+   <div class="gal" data-single="${d.p.length>1?0:1}" tabindex="0" role="group"
+        aria-label="Photos of ${esc(d.n)}">
+     <span class="badge src">${esc(d.s)}</span>
+     <span class="badge count2"><b class="i">1</b>/${d.p.length}</span>
+     ${d.new?'<span class="badge new">New</span>':''}
+     <button class="nav prev" aria-label="Previous photo"><span>‹</span></button>
+     <button class="nav next" aria-label="Next photo"><span>›</span></button>
+     <div class="dots">${d.p.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
+   </div>
+   <div class="body">
+     <h3 class="name">${esc(d.n)}</h3>
+     <div class="facts">${d.f.map(v=>`<span>${esc(v)}</span>`).join('<i>·</i>')}</div>
+     <p class="breed">${esc(d.b)}</p>
+     ${d.listed?`<div class="listed">${CLOCK}<b>${esc(d.listed)}</b></div>`:''}
+     <div class="tags">${tags.join('')}</div>
+     <div class="foot">
+       <a class="go" href="${esc(d.u)}" target="_blank" rel="noopener">See ${esc(d.n)} →</a>
+       <button class="hide" type="button" aria-pressed="${hidden.has(id)}"
+               title="${hidden.has(id)?'Show this dog again':'Hide this dog'}">${EYE}</button>
+     </div>
+   </div>`;
+
+  const btn = el.querySelector('.hide');
+  const paintHide = () => {
+    const off = hidden.has(id);
+    el.classList.toggle('hidden', off);
+    btn.innerHTML = off ? EYE_OFF : EYE;
+    btn.setAttribute('aria-pressed', String(off));
+    btn.title = off ? 'Show this dog again' : 'Hide this dog';
+  };
+  paintHide();
+  btn.addEventListener('click', () => {
+    hidden.has(id) ? hidden.delete(id) : hidden.add(id);
+    saveHidden();
+    paintHide();
+    clearTimeout(window.__reflow);
+    window.__reflow = setTimeout(render, 550);   // let the state read before it moves
+  });
+
+  const gal = el.querySelector('.gal');
+  const imgs = d.p.map((u,i) => {
+    const im = new Image();
+    im.alt = `${d.n}, photo ${i+1} of ${d.p.length}`;
+    im.loading = 'lazy';
+    if(i===0){ im.src=u; im.className='on'; } else { im.dataset.src=u; }
+    gal.insertBefore(im, gal.firstChild);
+    return im;
+  });
+  if(!d.p.length) gal.dataset.single='1';
+
+  const dots=[...el.querySelectorAll('.dots i')], counter=el.querySelector('.i');
+  let cur=0;
+  const load=i=>{const im=imgs[i]; if(im && !im.src && im.dataset.src) im.src=im.dataset.src;};
+  const show=i=>{
+    const n=imgs.length; if(!n) return;
+    cur=(i+n)%n; load(cur); load((cur+1)%n); load((cur-1+n)%n);
+    imgs.forEach((im,k)=>im.classList.toggle('on',k===cur));
+    dots.forEach((dt,k)=>dt.classList.toggle('on',k===cur));
+    if(counter) counter.textContent=cur+1;
+  };
+  if(d.p.length>1){
+    el.querySelector('.next').addEventListener('click',e=>{e.preventDefault();show(cur+1);});
+    el.querySelector('.prev').addEventListener('click',e=>{e.preventDefault();show(cur-1);});
+    gal.addEventListener('click',e=>{ if(!e.target.closest('.nav')) show(cur+1); });
+    gal.addEventListener('keydown',e=>{
+      if(e.key==='ArrowRight'){e.preventDefault();show(cur+1);}
+      if(e.key==='ArrowLeft'){e.preventDefault();show(cur-1);}
+    });
+    let x0=null;
+    gal.addEventListener('touchstart',e=>{x0=e.changedTouches[0].clientX;},{passive:true});
+    gal.addEventListener('touchend',e=>{
+      if(x0===null) return; const dx=e.changedTouches[0].clientX-x0;
+      if(Math.abs(dx)>36) show(cur+(dx<0?1:-1));
+      x0=null;
+    },{passive:true});
+    gal.style.cursor='pointer';
+  }
+  return el;
+}
+
+const grid=$('grid'), empty=$('empty'), countEl=$('count');
+
+function render(){
+  const f = readFilters();
+  const list = DOGS.filter(d => matches(d,f)).sort(order);
+  grid.replaceChildren(...list.map(card));
+  empty.hidden = list.length > 0;
+  const off = list.filter(d => hidden.has(dogId(d))).length;
+  countEl.textContent = off ? `${list.length - off} of ${DOGS.length} · ${off} hidden`
+                            : `${list.length} of ${DOGS.length}`;
+
+  // light up whichever preset this exactly equals
+  document.querySelectorAll('[data-preset]').forEach(p=>{
+    const want = {...blank, ...PRESETS[p.dataset.preset]};
+    const same = [...CONTROLS,...CHECKS].every(id =>
+      String(want[id] ?? (CHECKS.includes(id)?false:"")) === String(f[id]));
+    p.setAttribute('aria-pressed', String(same));
+  });
+  try{ localStorage.setItem('doggos.f', JSON.stringify(f)); }catch(e){}
+}
+
+const blank = {};
+CONTROLS.forEach(id => blank[id] = "");
+CHECKS.forEach(id => blank[id] = false);
+
+// populate the rescue dropdown from the data itself
+[...new Set(DOGS.map(d=>d.s))].sort().forEach(s=>{
+  const o=document.createElement('option'); o.value=o.textContent=s; $('f-source').append(o);
+});
+
+// preset counts
+document.querySelectorAll('[data-preset]').forEach(p=>{
+  const f = {...blank, ...PRESETS[p.dataset.preset]};
+  p.querySelector('b').textContent = DOGS.filter(d=>matches(d,f)).length;
+  p.addEventListener('click',()=>{ applyFilters({...blank, ...PRESETS[p.dataset.preset]}); render(); });
+});
+
+[...CONTROLS,...CHECKS].forEach(id => $(id).addEventListener('change', render));
+$('toggle').addEventListener('click',()=>{
+  const open = $('panel').hidden;
+  $('panel').hidden = !open;
+  $('toggle').setAttribute('aria-expanded', String(open));
+});
+
+// restore last session's filters, else open on whatever is most useful today
+let startF = null;
+try{ const raw = localStorage.getItem('doggos.f'); if(raw) startF = JSON.parse(raw); }catch(e){}
+if(!startF){
+  const anyNew = DOGS.some(d => daysAgo(d.seen) <= NEW_DAYS);
+  startF = {...blank, ...PRESETS[anyNew ? 'week' : 'fit']};
+}
+applyFilters(startF);
+render();
+</script>
+</body>
+</html>
