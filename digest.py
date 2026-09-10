@@ -312,6 +312,16 @@ def build_page(dogs: list[Dog], new_keys: set[str],
 
 # ---------------------------------------------------------------- delivery
 
+def env(name: str, default: str = "") -> str:
+    """os.environ.get, but an empty value counts as missing.
+
+    Actions expands an undefined `vars.X` to "" rather than leaving the variable
+    unset, so every optional env var arrives as an empty string rather than
+    absent. os.environ.get's default never fires, and int("") raises.
+    """
+    return os.environ.get(name, "").strip() or default
+
+
 def send(subject: str, html_body: str) -> str:
     to = [x.strip() for x in os.environ.get("MAIL_TO", "").split(",") if x.strip()]
     sender = os.environ.get("MAIL_FROM", "")
@@ -322,12 +332,11 @@ def send(subject: str, html_body: str) -> str:
     # GMAIL_APP_PASSWORD alone still work; set SMTP_HOST and SMTP_PORT to point
     # somewhere else (Brevo, Fastmail, SMTP2GO) if Google won't issue you an app
     # password. Port 465 is implicit TLS, 587 is STARTTLS — both handled below.
-    user = os.environ.get("SMTP_USER") or os.environ.get("GMAIL_USER", "")
-    password = (os.environ.get("SMTP_PASSWORD")
-                or os.environ.get("GMAIL_APP_PASSWORD", ""))
+    user = env("SMTP_USER") or env("GMAIL_USER")
+    password = env("SMTP_PASSWORD") or env("GMAIL_APP_PASSWORD")
     if password:
-        host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-        port = int(os.environ.get("SMTP_PORT", "465"))
+        host = env("SMTP_HOST", "smtp.gmail.com")
+        port = int(env("SMTP_PORT", "465"))
         msg = EmailMessage()
         msg["Subject"], msg["From"], msg["To"] = subject, sender, ", ".join(to)
         msg.set_content("This digest is best viewed as HTML.")
@@ -372,6 +381,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--reset", action="store_true")
+    ap.add_argument("--test", action="store_true",
+                    help="send one email now and change nothing — stands in "
+                         "recent dogs as 'new' so the email looks realistic")
     args = ap.parse_args()
 
     dogs: list[Dog] = []
@@ -396,15 +408,31 @@ def main() -> int:
     for d in new:
         first_seen.setdefault(d.key, today)
 
+    if args.test and not new:
+        # Nothing is genuinely new, which would make the test email a header and
+        # two sections. Stand in the most recently first-seen dogs so the "New
+        # today" section shows what a normal morning looks like. State is left
+        # untouched below, so these stay eligible to be announced for real.
+        recent = sorted(dogs, key=lambda d: first_seen.get(d.key, ""),
+                        reverse=True)
+        new = recent[:8]
+        new_keys = {d.key for d in new}
+        print(f"  [test] standing in {len(new)} recent dogs as new")
+
     picks = top_picks(dogs)
     labs = [d for d in picks if d.source == "Labs4rescue"]
     picks_non_lab = [d for d in picks if d.source != "Labs4rescue"]
 
     DOCS.mkdir(exist_ok=True)
+    # Without this, GitHub Pages runs the folder through Jekyll, which builds
+    # nothing useful here and drops any file starting with "_" or ".". The page
+    # is self-contained, so opt out. Written every run so a fresh clone or a
+    # deleted docs/ can't lose it.
+    (DOCS / ".nojekyll").write_text("")
     (DOCS / "index.html").write_text(build_page(dogs, new_keys, first_seen))
     print(f"  wrote {DOCS/'index.html'} ({len(dogs)} dogs)")
 
-    if first_run and not args.reset:
+    if first_run and not args.reset and not args.test:
         print(f"Baseline recorded ({len(dogs)} dogs). No email on the first run.")
     elif args.reset:
         print(f"Baseline reset to {len(dogs)} dogs.")
@@ -419,7 +447,7 @@ def main() -> int:
             print(f"  {send(subject, body)}")
         print(f"  new: {len(new)} | top dogs: {len(picks_non_lab)} | top labs: {len(labs)}")
 
-    if not args.dry_run:
+    if not args.dry_run and not args.test:
         for d in dogs:
             first_seen.setdefault(d.key, today)
         STATE.write_text(json.dumps(

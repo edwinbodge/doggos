@@ -11,6 +11,10 @@ on:
         description: "Build without sending or saving state"
         type: boolean
         default: false
+      test_email:
+        description: "Send a test email now, changing nothing"
+        type: boolean
+        default: false
 
 permissions:
   contents: write             # needed to commit seen.json and docs/
@@ -46,10 +50,10 @@ jobs:
           SMTP_PORT: ${{ vars.SMTP_PORT }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
-          python digest.py ${{ inputs.dry_run && '--dry-run' || '' }}
+          python digest.py ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.test_email && '--test' || '' }}
 
       - name: Commit state and page
-        if: ${{ !inputs.dry_run }}
+        if: ${{ !inputs.dry_run && !inputs.test_email }}
         run: |
           git config user.name  "doggo-bot"
           git config user.email "doggo-bot@users.noreply.github.com"
