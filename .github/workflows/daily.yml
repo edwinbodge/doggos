@@ -2,9 +2,14 @@ name: Daily doggo digest
 
 on:
   schedule:
-    # 11:00 UTC = 7am Eastern during daylight saving, 6am in winter.
-    # GitHub's scheduler is best-effort and can run a few minutes late.
-    - cron: "0 11 * * *"
+    # 11:23 UTC = 7:23am Eastern during daylight saving, 6:23am in winter.
+    #
+    # The minute is deliberately not :00. GitHub's scheduler is best-effort and
+    # queues everyone's cron on shared capacity; "0" is by far the most common
+    # minute, so jobs there wait behind the crowd. A first run at "0 11" landed
+    # 3h40m late (14:40 UTC). Off-peak minutes are the standard mitigation —
+    # they reduce the wait a lot, but nothing here guarantees a delivery time.
+    - cron: "23 11 * * *"
   workflow_dispatch:          # lets you run it by hand from the Actions tab
     inputs:
       dry_run:

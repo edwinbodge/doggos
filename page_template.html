@@ -321,7 +321,15 @@ function matches(d, f){
 }
 
 const score = d => (d.g.length * 2) + (d.new ? 1 : 0);
-const order = (a,b) => (hidden.has(dogId(a)) - hidden.has(dogId(b))) || (score(b) - score(a));
+
+// Newest first, always. `seen` is the day this digest first saw the dog, which
+// is the one date every rescue gives us — the rescues' own listing dates either
+// don't exist in their feeds or, for Hearts & Bones, run months back and would
+// bury them. Within a single day, best-documented dogs lead. Hidden dogs sink.
+const order = (a,b) =>
+     (hidden.has(dogId(a)) - hidden.has(dogId(b)))
+  || (b.seen || "").localeCompare(a.seen || "")
+  || (score(b) - score(a));
 
 function card(d){
   const id = dogId(d);

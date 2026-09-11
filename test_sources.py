@@ -96,3 +96,23 @@ def test_script_tag_cannot_escape_the_data_block():
     assert "\\u003c/script>" in page
     # and the page still has exactly the one closing tag it shipped with
     assert page.count("</script>") == page.count("<script")
+
+
+def test_empty_env_vars_fall_back_to_defaults(monkeypatch):
+    """GitHub Actions expands an undefined `vars.X` to "" rather than omitting it.
+
+    So every optional variable arrives as an empty string, os.environ.get's
+    default never fires, and int("") raises. This is what took down the first
+    real send.
+    """
+    import digest
+
+    for k in ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD"):
+        monkeypatch.setenv(k, "")
+
+    assert digest.env("SMTP_HOST", "smtp.gmail.com") == "smtp.gmail.com"
+    assert int(digest.env("SMTP_PORT", "465")) == 465
+    assert digest.env("SMTP_USER") == ""
+    # and a set value still wins
+    monkeypatch.setenv("SMTP_PORT", "587")
+    assert int(digest.env("SMTP_PORT", "465")) == 587

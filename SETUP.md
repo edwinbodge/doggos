@@ -136,10 +136,18 @@ If Actions says workflows are disabled on a fresh fork/repo, there's a green
 
 ### Then let it run
 
-11:00 UTC daily — 7am Eastern in summer, 6am in winter. GitHub's cron doesn't
-know about daylight saving and the scheduler is best-effort, so it can land a few
-minutes late. If the winter hour bothers you, change the `cron:` line in
-`.github/workflows/daily.yml`.
+11:23 UTC daily — 7:23am Eastern in summer, 6:23am in winter. GitHub's cron
+doesn't know about daylight saving, so the clock-time shifts twice a year while
+the schedule stays put. Change the `cron:` line in `.github/workflows/daily.yml`
+if the hour drifts somewhere you don't want it.
+
+**Don't expect it to the minute.** Scheduled workflows run on shared capacity and
+GitHub makes no delivery guarantee — a run set for `0 11` once fired at 14:40
+UTC, 3h40m late. The minute here is deliberately `:23` rather than `:00`, since
+`0` is the most common minute in everyone's cron and jobs there queue behind the
+crowd. Off-peak minutes cut the wait a lot; they don't eliminate it. If you ever
+need a guaranteed time, drive it from an external scheduler that calls the
+`workflow_dispatch` API instead.
 
 ### Checking on it
 
