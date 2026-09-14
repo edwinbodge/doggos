@@ -468,6 +468,10 @@ def main() -> int:
     # is self-contained, so opt out. Written every run so a fresh clone or a
     # deleted docs/ can't lose it.
     (DOCS / ".nojekyll").write_text("")
+    # Icons are the Apple 🐶 emoji baked into PNGs, so the tab looks the same
+    # on every OS. Copied in each run for the same reason as .nojekyll.
+    for icon in ("favicon.png", "apple-touch-icon.png"):
+        (DOCS / icon).write_bytes((ROOT / "assets" / icon).read_bytes())
     (DOCS / "index.html").write_text(build_page(dogs, new_keys, first_seen))
     print(f"  wrote {DOCS/'index.html'} ({len(dogs)} dogs)")
 

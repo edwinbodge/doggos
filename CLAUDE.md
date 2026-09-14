@@ -28,13 +28,14 @@ dog data matters more than features.
 | `sources.py` | Five feed fetchers, the `Dog` dataclass, trait vocabulary |
 | `digest.py` | Selection, email HTML, page build, SMTP delivery, CLI |
 | `page_template.html` | The directory page; data injected at `/*__DATA__*/` |
-| `.github/workflows/daily.yml` | Email + state, once daily at 11:23 UTC |
+| `.github/workflows/daily.yml` | Email + state, scheduled 11:23 UTC (runs hours late — see Operational notes) |
 | `.github/workflows/site.yml` | Page refresh only, every 4 hours |
 | `seen.json` | State: `{"first_seen": {dog_key: iso_date}}` |
+| `assets/` | Favicon PNGs (Apple 🐶 emoji), copied into `docs/` every run |
 | `docs/` | Published by Pages from `main` / `/docs` |
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt pytest   # this Mac has no `python`; use a venv
 python digest.py --dry-run     # build, write docs/, send nothing, save nothing
 python digest.py --site-only   # refresh the page only, never touches state
 python digest.py --test        # send one email now, change nothing
@@ -52,14 +53,15 @@ Each of these is here because it already went wrong once, or would have.
 The site refresh runs every 4 hours; the email runs once a day. If a site refresh
 recorded dogs as seen, the daily digest would find nothing new and **those dogs
 would never be emailed** — the page would quietly eat the announcements. The
-early return in `main()` sits deliberately before any state write. There's a test
-for this; keep it passing.
+early return in `main()` sits deliberately before any state write. **Not
+tested** — an earlier version of this note said it was; it isn't.
 
 **2. A failed send must not advance the baseline.**
 If the email didn't arrive, today's new dogs have to stay new so tomorrow
 announces them. `send_failed` skips the state write and exits 1. The page still
 publishes, and the workflow's commit step uses `!cancelled()` rather than
 `success()` so the site doesn't go stale on exactly the mornings something broke.
+Not tested.
 
 **3. Petfinder needs `adoption_status: ["adoptable"]`.**
 Without it the API returns the org's entire history. Labs4rescue came back with
@@ -71,9 +73,12 @@ Dog data is injected into a `<script>` block. `json.dumps` does not escape `<`,
 so a rescue write-up containing `</script>` would close the tag and turn the rest
 into HTML. Tested.
 
-**5. If every source fails, abort without touching `seen.json`.**
-One bad source is survivable; total failure must not wipe the baseline and turn
-tomorrow's email into 200 dogs.
+**5. If every source fails, abort before building anything.**
+One bad source is survivable. With all five down, `dogs` is empty, and carrying on
+would publish an empty directory over the real one and email "0 new doggos." (An
+earlier version of this note said it would wipe the baseline — it wouldn't:
+`first_seen` is only ever added to, never pruned.) The early return keeps the
+page, the email and `seen.json` all untouched. Not tested.
 
 **6. Empty env vars are not missing env vars.**
 GitHub Actions expands an undefined `vars.X` to `""`, not to nothing. So
@@ -159,15 +164,19 @@ needs **no code change** — only `SMTP_HOST` / `SMTP_PORT` (Variables) and
 Worth knowing in full, because the instinct to "fix the credential" is wrong.
 
 The morning run failed with `SMTPAuthenticationError: 534 5.7.9
-WebLoginRequired`. The account's security log showed why:
+WebLoginRequired`. The account's security log showed why (times Central):
 
 ```
-5:10 AM   Your account was disabled     ← no location, no device (automated)
-6:23 AM   digest runs, gets 534
-2:42 PM   Account restored              Wisconsin
+ 5:10 AM   Your account was disabled     ← no location, no device (automated)
+ 6:23 AM   digest scheduled
+11:58 AM   digest actually runs (16:58 UTC, 5h35m late), gets 534
+ 2:42 PM   Account restored              Wisconsin
+ 2:51 PM   manual re-run succeeds
 ```
 
-Google had **disabled the whole account** an hour before the run. The SMTP
+Google had **disabled the whole account** almost seven hours before the run. (An
+earlier version of this timeline put the run at 6:23 — that was the cron time,
+not when it ran.) The SMTP
 rejection was the symptom, not the cause. Two wrong turns were taken diagnosing
 it: first attributing it to gradual IP-based risk scoring (it was a single
 discrete enforcement action), then concluding the app password had been
@@ -213,10 +222,25 @@ Three live options, Edwin has not yet chosen:
 
 ## Operational notes
 
-- **GitHub cron is best-effort.** A run scheduled for `0 11` once fired at 14:40
-  UTC — 3h40m late. The minute is `:23` on purpose; `:00` is the most contended
-  minute and jobs there queue behind everyone else. Off-peak minutes reduce the
-  wait but guarantee nothing.
+- **Petfinder blocks this Mac.** From Edwin's home connection `psl.petfinder.com`
+  returns `403 Access Denied` (an edge block, HTML not JSON), so local runs log
+  `Labs4rescue FAILED` / `ACC Manhattan FAILED` and build a page missing ~100
+  dogs. CI's runners get through fine. Don't commit a locally built `docs/` — let
+  the workflows publish, or trigger "Refresh site" by hand.
+- **GitHub cron is best-effort, and here it's late every day.** Every scheduled
+  digest so far:
+
+  | Date | Cron (UTC) | Started (UTC) | Late |
+  |---|---|---|---|
+  | 11 Sep | 11:00 | 14:40 | 3h40m |
+  | 12 Sep | 11:23 | 14:13 | 2h50m |
+  | 13 Sep | 11:23 | 14:56 | 3h33m |
+  | 14 Sep | 11:23 | 16:58 | 5h35m |
+
+  So the "morning" email realistically lands 10am–1pm Eastern. The `:23` minute
+  was meant to dodge the `:00` queue; on four runs it hasn't clearly helped.
+  Check with `gh run list --workflow daily.yml --event schedule` before assuming
+  a late email means something broke.
 - Both workflows share a `concurrency` group and `git pull --rebase` before
   pushing, because both push to `main`.
 - GitHub disables scheduled workflows after **60 days of repo inactivity**. The
@@ -227,6 +251,8 @@ Three live options, Edwin has not yet chosen:
   leaves the device, which is why Edwin and Elizabeth keep separate lists.
 - `docs/.nojekyll` is written every run. Without it Pages runs the folder through
   Jekyll, which builds nothing useful here and drops files starting with `_`.
+  The favicons are copied from `assets/` on every run for the same reason — so a
+  fresh clone or a deleted `docs/` can't lose them.
 
 ## Working style
 
