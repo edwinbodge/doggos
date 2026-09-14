@@ -415,6 +415,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--reset", action="store_true")
+    ap.add_argument("--site-only", action="store_true",
+                    help="refresh the published page and stop — no email, and "
+                         "seen.json is left alone so nothing gets marked "
+                         "announced before the daily digest announces it")
     ap.add_argument("--test", action="store_true",
                     help="send one email now and change nothing — stands in "
                          "recent dogs as 'new' so the email looks realistic")
@@ -453,6 +457,7 @@ def main() -> int:
         new_keys = {d.key for d in new}
         print(f"  [test] standing in {len(new)} recent dogs as new")
 
+    send_failed = False
     picks = top_picks(dogs)
     labs = [d for d in picks if d.source == "Labs4rescue"]
     picks_non_lab = [d for d in picks if d.source != "Labs4rescue"]
@@ -466,6 +471,13 @@ def main() -> int:
     (DOCS / "index.html").write_text(build_page(dogs, new_keys, first_seen))
     print(f"  wrote {DOCS/'index.html'} ({len(dogs)} dogs)")
 
+    if args.site_only:
+        # Deliberately before any state write. If a site refresh recorded these
+        # dogs as seen, the daily digest would find nothing new and they would
+        # never be emailed — the page would quietly eat the announcements.
+        print(f"Site refreshed. {len(new)} dog(s) not yet announced by email.")
+        return 0
+
     if first_run and not args.reset and not args.test:
         print(f"Baseline recorded ({len(dogs)} dogs). No email on the first run.")
     elif args.reset:
@@ -478,8 +490,22 @@ def main() -> int:
         if args.dry_run:
             print(f"[dry run] would send: {subject}")
         else:
-            print(f"  {send(subject, body)}")
+            try:
+                print(f"  {send(subject, body)}")
+            except Exception as e:
+                # A refused mail server must not cost us the day's listings, and
+                # must not advance the baseline — if the email never arrived,
+                # today's new dogs have to stay new so tomorrow announces them.
+                # So: keep going (the page is already built and gets committed),
+                # leave seen.json alone, and exit non-zero so the failure is loud.
+                send_failed = True
+                print(f"  SEND FAILED: {type(e).__name__}: {e}", file=sys.stderr)
         print(f"  new: {len(new)} | top dogs: {len(picks_non_lab)} | top labs: {len(labs)}")
+
+    if send_failed:
+        print("Email did not go out. Page still published; baseline NOT advanced, "
+              "so these dogs stay new for tomorrow.", file=sys.stderr)
+        return 1
 
     if not args.dry_run and not args.test:
         for d in dogs:

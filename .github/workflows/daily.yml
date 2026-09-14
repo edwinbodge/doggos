@@ -25,7 +25,9 @@ permissions:
   contents: write             # needed to commit seen.json and docs/
 
 concurrency:
-  group: digest
+  # Shared with "Refresh site" — both push to main, and two pushes racing is
+  # how you get a rejected non-fast-forward at 4am.
+  group: doggos-commit
   cancel-in-progress: false
 
 jobs:
@@ -58,7 +60,11 @@ jobs:
           python digest.py ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.test_email && '--test' || '' }}
 
       - name: Commit state and page
-        if: ${{ !inputs.dry_run && !inputs.test_email }}
+        # !cancelled() rather than success(): when the mail server refuses,
+        # digest.py still built the page and exits 1 on purpose. Without this the
+        # step is skipped and the site silently goes stale on exactly the days
+        # something went wrong.
+        if: ${{ !cancelled() && !inputs.dry_run && !inputs.test_email }}
         run: |
           git config user.name  "doggo-bot"
           git config user.email "doggo-bot@users.noreply.github.com"
@@ -67,5 +73,6 @@ jobs:
             echo "Nothing changed today."
           else
             git commit -m "digest: $(date -u +%Y-%m-%d)"
+            git pull --rebase --autostash
             git push
           fi

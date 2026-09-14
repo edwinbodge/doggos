@@ -19,6 +19,20 @@ to set the baseline.
 
 ---
 
+## Two workflows, on purpose
+
+| Workflow | When | Does | Touches `seen.json` |
+|---|---|---|---|
+| **Refresh site** | every 4h | rebuilds and commits `docs/` | never |
+| **Daily doggo digest** | 11:23 UTC | the above, plus the email | yes, only on a successful send |
+
+They're split because the site shouldn't go stale when mail breaks — which is
+exactly what happened the morning Gmail refused auth. `--site-only` deliberately
+returns *before* any state write: if a site refresh recorded dogs as seen, the
+daily digest would find nothing new and those dogs would never be emailed.
+
+Both share a `concurrency` group so they can't push over each other.
+
 ## What's in the email
 
 **New today** — everything not listed yesterday, unfiltered by design so nothing
