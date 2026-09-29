@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-28T18:37:55",
+ "updated": "2026-09-29T16:55:02",
  "first_seen": {
   "ACC Manhattan:01344a73-cdad-4428-b7b8-cf479b8eee8a": "2026-09-10",
   "ACC Manhattan:01e75d88-2b45-41ff-8ff1-6b95f4f3d66e": "2026-09-22",
@@ -50,6 +50,7 @@
   "ACC Manhattan:464736f6-70f4-4667-b77d-935a2be58099": "2026-09-20",
   "ACC Manhattan:465d1bbc-33fe-4026-af58-8c57ea247391": "2026-09-11",
   "ACC Manhattan:4a0310a0-3916-41f0-93cb-bffd424cc8bc": "2026-09-21",
+  "ACC Manhattan:4a9040ae-5094-433e-a824-faf4e3ac1390": "2026-09-29",
   "ACC Manhattan:4b1b0381-48ca-4994-8b58-cb05435b8f94": "2026-09-22",
   "ACC Manhattan:4e17ffc2-b756-4dcc-96d1-7bd32ec63f7b": "2026-09-21",
   "ACC Manhattan:51995180-fb83-4a82-a6e9-1d21d1a54d51": "2026-09-10",
@@ -201,6 +202,7 @@
   "Hearts & Bones:HBR-A-123458": "2026-09-10",
   "Hearts & Bones:HBR-A-123469": "2026-09-16",
   "Hearts & Bones:HBR-A-123471": "2026-09-16",
+  "Hearts & Bones:HBR-A-123475": "2026-09-29",
   "Hearts & Bones:HBR-A-123478": "2026-09-16",
   "Hearts & Bones:HBR-A-123479": "2026-09-17",
   "Hearts & Bones:HBR-A-123481": "2026-09-17",
@@ -220,6 +222,10 @@
   "Hearts & Bones:HBR-A-123519": "2026-09-24",
   "Hearts & Bones:HBR-A-123520": "2026-09-17",
   "Hearts & Bones:HBR-A-123521": "2026-09-16",
+  "Hearts & Bones:HBR-A-123528": "2026-09-29",
+  "Hearts & Bones:HBR-A-123530": "2026-09-29",
+  "Hearts & Bones:HBR-A-123536": "2026-09-29",
+  "Hearts & Bones:HBR-A-123544": "2026-09-29",
   "Labs4rescue:0779ad27-3f81-4a93-8531-7899922bc11e": "2026-09-13",
   "Labs4rescue:110f5bcd-652c-49b2-9899-f49e18115be7": "2026-09-23",
   "Labs4rescue:12d4d895-0bcb-4aca-9e4b-89d176aa5a91": "2026-09-10",
