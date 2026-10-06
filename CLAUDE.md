@@ -222,25 +222,57 @@ Three live options, Edwin has not yet chosen:
 
 ## Operational notes
 
+- **A failed digest isn't always the mail server.** On 5 Oct the run failed
+  without executing a single step: GitHub never allocated a machine for it. The
+  annotation was *"The job was not acquired by Runner of type hosted even after
+  multiple attempts"*; it sat unassigned for 15 minutes and was cancelled.
+  Nothing to fix — a manual re-run the next day went through. Tell the two apart
+  before diagnosing anything:
+
+  ```bash
+  gh api repos/edwinbodge/doggos/actions/runs/<id>/jobs \
+    --jq '.jobs[] | {conclusion, runner_name, steps: (.steps|length)}'
+  JOB=<job_id>; gh api repos/edwinbodge/doggos/check-runs/$JOB/annotations \
+    --jq '.[] | "\(.annotation_level): \(.message)"'
+  ```
+
+  `steps: 0` with an empty `runner_name` means it never ran — infrastructure, not
+  us. Steps that ran and then failed is a real error; read the log. Note `gh run
+  view --log` returns "log not found" for a job that never started, which itself
+  is a useful signal.
+
+  Missing a day is self-healing: the baseline only advances on a successful send,
+  so the next run announces both days in one email (6 Oct sent 21). The cost is
+  that the skipped day's dogs get that day's `first_seen`, so their "Listed"
+  dates read a day late. If you re-run by hand, expect the scheduled run later
+  that day to arrive saying "0 new doggos."
+- **`ubuntu-latest` becomes Ubuntu 26 from 19 Oct 2026** (GitHub notice on every
+  run). Nothing here looks version-sensitive — pin `ubuntu-24.04` if it does.
 - **Petfinder blocks this Mac.** From Edwin's home connection `psl.petfinder.com`
   returns `403 Access Denied` (an edge block, HTML not JSON), so local runs log
   `Labs4rescue FAILED` / `ACC Manhattan FAILED` and build a page missing ~100
   dogs. CI's runners get through fine. Don't commit a locally built `docs/` — let
   the workflows publish, or trigger "Refresh site" by hand.
-- **GitHub cron is best-effort, and here it's late every day.** Every scheduled
-  digest so far:
+- **GitHub cron is best-effort, and here it's late every single day.** Across the
+  first 25 scheduled runs (11 Sep – 5 Oct 2026), measured against the cron time:
 
-  | Date | Cron (UTC) | Started (UTC) | Late |
-  |---|---|---|---|
-  | 11 Sep | 11:00 | 14:40 | 3h40m |
-  | 12 Sep | 11:23 | 14:13 | 2h50m |
-  | 13 Sep | 11:23 | 14:56 | 3h33m |
-  | 14 Sep | 11:23 | 16:58 | 5h35m |
+  | | Late by |
+  |---|---|
+  | Best | 2h50m |
+  | Median | 4h13m |
+  | Worst | 8h16m (5 Oct, the run that never got a machine) |
+  | Under 3h | 1 run out of 25 |
 
-  So the "morning" email realistically lands 10am–1pm Eastern. The `:23` minute
-  was meant to dodge the `:00` queue; on four runs it hasn't clearly helped.
-  Check with `gh run list --workflow daily.yml --event schedule` before assuming
-  a late email means something broke.
+  So this is not a morning email. It lands roughly **10am–2pm Eastern**, and the
+  `:23` minute meant to dodge the `:00` queue made no visible difference. Don't
+  read a late email as a broken one; check first:
+
+  ```bash
+  gh run list --workflow daily.yml --event schedule
+  ```
+
+  If the delivery hour ever matters more than the $0, that's an argument for a
+  scheduler that isn't GitHub Actions — not for another cron tweak.
 - Both workflows share a `concurrency` group and `git pull --rebase` before
   pushing, because both push to `main`.
 - GitHub disables scheduled workflows after **60 days of repo inactivity**. The
