@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-07T17:50:51",
+ "updated": "2026-10-08T17:54:29",
  "first_seen": {
   "ACC Manhattan:01344a73-cdad-4428-b7b8-cf479b8eee8a": "2026-09-10",
   "ACC Manhattan:01e75d88-2b45-41ff-8ff1-6b95f4f3d66e": "2026-09-22",
@@ -163,6 +163,7 @@
   "ACC Manhattan:b157f9fb-b015-444c-bbf4-eb9af591e90b": "2026-10-01",
   "ACC Manhattan:b2816fdb-2a82-4de6-91ab-9836d81fb80d": "2026-09-12",
   "ACC Manhattan:b6681c60-a0a1-43f3-9f6e-4c0c846ba51a": "2026-09-23",
+  "ACC Manhattan:b6da19fb-52a1-4c95-935e-ad7bbbaff505": "2026-10-08",
   "ACC Manhattan:b94191eb-6bea-4547-b280-b02a3015f1af": "2026-09-10",
   "ACC Manhattan:bb88291c-529e-41dd-9a59-c1ed53e7c628": "2026-09-22",
   "ACC Manhattan:bb9e397b-ca50-4ef0-b803-56f0a8a2220b": "2026-09-24",
@@ -456,7 +457,9 @@
   "Muddy Paws:010283": "2026-09-30",
   "Muddy Paws:010284": "2026-10-01",
   "Muddy Paws:010288": "2026-10-01",
+  "Muddy Paws:010290": "2026-10-08",
   "Muddy Paws:010292": "2026-10-07",
+  "Muddy Paws:010293": "2026-10-08",
   "Muddy Paws:010309": "2026-10-06",
   "Muddy Paws:010310": "2026-10-06",
   "Waldo's:1143667": "2026-09-10",
