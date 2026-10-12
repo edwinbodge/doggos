@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-11T16:40:15",
+ "updated": "2026-10-12T20:19:51",
  "first_seen": {
   "ACC Manhattan:01344a73-cdad-4428-b7b8-cf479b8eee8a": "2026-09-10",
   "ACC Manhattan:01e75d88-2b45-41ff-8ff1-6b95f4f3d66e": "2026-09-22",
@@ -118,7 +118,9 @@
   "ACC Manhattan:7fd2fdde-d01d-49d8-a76e-0f85f29393cd": "2026-09-10",
   "ACC Manhattan:80a346b2-3d1b-4583-9809-a4c583874d89": "2026-09-26",
   "ACC Manhattan:81870e25-9948-4f60-be30-7689938d77ec": "2026-09-10",
+  "ACC Manhattan:81e351ed-3c90-4bff-89db-833538fb370d": "2026-10-12",
   "ACC Manhattan:8328b100-a3e3-4e50-b13c-f581d72e3167": "2026-09-24",
+  "ACC Manhattan:84e5b86c-53a5-459d-8cf2-7e1270fed3f8": "2026-10-12",
   "ACC Manhattan:858c5d77-4d87-4d81-b090-746af5280795": "2026-09-14",
   "ACC Manhattan:890965bd-a602-430f-a738-651540825e2e": "2026-09-17",
   "ACC Manhattan:898a1d3e-9edb-4169-965e-f481258b9ee7": "2026-09-10",
@@ -172,7 +174,9 @@
   "ACC Manhattan:bb88291c-529e-41dd-9a59-c1ed53e7c628": "2026-09-22",
   "ACC Manhattan:bb9e397b-ca50-4ef0-b803-56f0a8a2220b": "2026-09-24",
   "ACC Manhattan:be455125-1778-4460-944d-59b8f9f7178b": "2026-09-28",
+  "ACC Manhattan:bee450c1-0fbe-4c83-a0d8-d7b0f52aec8f": "2026-10-12",
   "ACC Manhattan:bf27ee2d-7596-49fe-9b36-c9a3f5d63f63": "2026-09-14",
+  "ACC Manhattan:bf3f0d6b-e6df-444f-9ff0-de39f4df3049": "2026-10-12",
   "ACC Manhattan:bf7d927b-43a5-4cc7-8f58-f4afc927845c": "2026-10-06",
   "ACC Manhattan:bfb9ca06-9a5b-4dc8-9bcf-758e650ab245": "2026-09-30",
   "ACC Manhattan:c33084ee-5919-477b-a7f7-72c2f8af9686": "2026-09-10",
@@ -211,6 +215,7 @@
   "ACC Manhattan:ec9a3778-17e9-4ab7-a30b-ba69f8525ff4": "2026-10-01",
   "ACC Manhattan:ed160df2-5ee8-46f2-82e8-55d462eac947": "2026-10-01",
   "ACC Manhattan:ed28e488-215c-4fde-9543-6d7ba6584893": "2026-09-23",
+  "ACC Manhattan:ed3c7778-0014-4824-8252-5a6824e3430e": "2026-10-12",
   "ACC Manhattan:edb7d415-e01a-424a-9337-144d146332f8": "2026-09-15",
   "ACC Manhattan:efbddf07-c341-4c4e-86f8-ee4ccade78e6": "2026-09-11",
   "ACC Manhattan:f09e3ef4-2113-44d4-9f87-4956f0c803b7": "2026-09-11",
@@ -219,6 +224,7 @@
   "ACC Manhattan:f5149c9a-14cb-461d-afbe-110e101c04e1": "2026-09-21",
   "ACC Manhattan:f842c6b9-c8b1-4aa9-ae92-1fe169228bb0": "2026-10-06",
   "ACC Manhattan:f87002bd-28ba-47f8-8eee-bfad93ff6722": "2026-09-22",
+  "ACC Manhattan:f9a7514f-ec01-45d4-b919-7408d30d2897": "2026-10-12",
   "ACC Manhattan:fa944f9f-5342-4d21-a2d8-1c78eb0487ca": "2026-10-03",
   "ACC Manhattan:fb81ad00-a7a8-45c9-928e-e8aac56a5ba5": "2026-09-15",
   "ACC Manhattan:fd21dffe-23a8-49f1-a9d2-58c14f503640": "2026-09-18",
@@ -549,6 +555,7 @@
   "Waldo's:2847187": "2026-09-20",
   "Waldo's:2847188": "2026-09-20",
   "Waldo's:2847189": "2026-09-20",
-  "Waldo's:2847190": "2026-09-20"
+  "Waldo's:2847190": "2026-09-20",
+  "Waldo's:899789": "2026-10-12"
  }
 }
