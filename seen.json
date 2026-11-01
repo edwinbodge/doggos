@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-31T16:09:57",
+ "updated": "2026-11-01T17:10:22",
  "first_seen": {
   "ACC Manhattan:01344a73-cdad-4428-b7b8-cf479b8eee8a": "2026-09-10",
   "ACC Manhattan:01e75d88-2b45-41ff-8ff1-6b95f4f3d66e": "2026-09-22",
@@ -28,6 +28,7 @@
   "ACC Manhattan:0fd7f2e6-1ab8-40ab-a9dd-a9805072e6b7": "2026-09-26",
   "ACC Manhattan:1180055d-16c3-4ac5-b7f1-53957f6baf2e": "2026-09-28",
   "ACC Manhattan:11bbce3b-03cc-4a45-912d-cdebdc894553": "2026-10-28",
+  "ACC Manhattan:15b28308-c188-46a4-b3b2-825f0c3cd9fa": "2026-11-01",
   "ACC Manhattan:16df9baf-48ba-48f9-aede-a86842ef7dab": "2026-10-28",
   "ACC Manhattan:17e602e2-3086-467d-be0a-0deac403685f": "2026-09-24",
   "ACC Manhattan:18f16725-740a-4b2f-9e66-f3c0d3763848": "2026-09-10",
@@ -45,6 +46,7 @@
   "ACC Manhattan:1f00cc8b-4dc0-4bb7-9749-b93e1350af45": "2026-09-10",
   "ACC Manhattan:1f5ff0f0-5f2a-44a4-ab37-0b80941275fb": "2026-09-21",
   "ACC Manhattan:20f820bb-6a7e-493c-81f4-3b37769b687e": "2026-10-09",
+  "ACC Manhattan:2130c776-d0dc-4bf4-8bda-9fd7286b8eda": "2026-11-01",
   "ACC Manhattan:21714f67-4e51-4297-8708-be278d9b22f1": "2026-09-10",
   "ACC Manhattan:2338594a-a497-48fe-88ed-b5d404840aad": "2026-10-21",
   "ACC Manhattan:25be98d3-d16a-44ce-b468-8d9e2261848e": "2026-09-10",
@@ -414,6 +416,7 @@
   "Hearts & Bones:HBR-A-123617": "2026-10-27",
   "Hearts & Bones:HBR-A-123618": "2026-10-28",
   "Hearts & Bones:HBR-A-123619": "2026-10-28",
+  "Hearts & Bones:HBR-A-123624": "2026-11-01",
   "Hearts & Bones:HBR-A-123625": "2026-10-27",
   "Hearts & Bones:HBR-A-123629": "2026-10-27",
   "Hearts & Bones:HBR-A-123630": "2026-10-27",
