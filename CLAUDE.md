@@ -127,6 +127,21 @@ would make Top dogs a Hearts & Bones–only list and hide four of the five rescu
 So: hard-filter on size and age (universal), exclude known disqualifiers, then
 *rank* confirmed-good first with unknowns below, marked "traits not listed."
 
+**Labs4rescue is off by default (Nov 2026).** Some of their listing photos look
+AI-generated or AI-edited, so the dogs can't be judged from the listing. It's
+`OFF_BY_DEFAULT` in `digest.py`, injected into the page, so email and site can't
+disagree. Concretely: never in the email; on the page it's excluded from every
+preset and from Rescue → "Any except Labs4rescue", and appears only when picked
+by name. It's still fetched and still recorded in `seen.json`, so turning it back
+on won't announce its backlog as new.
+
+That changed what **"Top labs"** means in the email. It used to be literally
+`source == "Labs4rescue"`; it's now Lab-type breed (`is_lab`) from the other
+rescues, matching the page's Top labs button, and still disjoint from Top dogs.
+Expect it to be thin: ACC lists 191 of its 198 dogs as "Mixed Breed", so ACC
+dogs never qualify, and Top labs leans on Hearts & Bones, Waldo's and Muddy Paws
+(7 dogs on 3 Nov).
+
 **Descriptions are mined for traits.** ACC writes to a house style and embeds
 exact weight and age in prose (`Weight: 48lbs`, `Age: 1yrs 0mths`) — better than
 Petfinder's size buckets. Waldo's and Muddy Paws yield phrases like "great with

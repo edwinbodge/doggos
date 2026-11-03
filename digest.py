@@ -46,6 +46,14 @@ PUPPY_YEARS = 1.0        # under this, a small dog still has growing to do
 OK_BUCKETS = {"medium"}  # used when a source gives no number
 NEW_WINDOW_DAYS = 7
 
+# Rescues still fetched and still on the page, but left out of the email and
+# off by default on every page filter — reachable only by picking them from the
+# Rescue dropdown. Still recorded in seen.json, so switching one back on later
+# doesn't announce its whole backlog as new.
+#   Labs4rescue: some listing photos look AI-generated or AI-edited, so the
+#   dogs can't be judged from their listings (Edwin, Nov 2026).
+OFF_BY_DEFAULT = {"Labs4rescue"}
+
 ACCENT = "#2C6A4B"
 INK = "#1B1E19"
 INK_2 = "#4A5147"
@@ -340,6 +348,7 @@ def build_page(dogs: list[Dog], new_keys: set[str],
             .replace("\u2028", "\\u2028")
             .replace("\u2029", "\\u2029"))
     return tpl.replace("/*__DATA__*/[]", blob) \
+              .replace("/*__OFF__*/[]", json.dumps(sorted(OFF_BY_DEFAULT))) \
               .replace("__NEWDAYS__", str(NEW_WINDOW_DAYS))\
               .replace("__UPDATED__", dt.datetime.now().strftime("%-d %B %Y, %-I:%M %p"))
 
@@ -446,21 +455,28 @@ def main() -> int:
     for d in new:
         first_seen.setdefault(d.key, today)
 
-    if args.test and not new:
+    # The email only ever sees these. The page gets every dog and hides the
+    # off-by-default rescues itself, so they're still one dropdown away there.
+    emailable = [d for d in dogs if d.source not in OFF_BY_DEFAULT]
+    email_new = [d for d in new if d.source not in OFF_BY_DEFAULT]
+
+    if args.test and not email_new:
         # Nothing is genuinely new, which would make the test email a header and
         # two sections. Stand in the most recently first-seen dogs so the "New
         # today" section shows what a normal morning looks like. State is left
         # untouched below, so these stay eligible to be announced for real.
-        recent = sorted(dogs, key=lambda d: first_seen.get(d.key, ""),
+        recent = sorted(emailable, key=lambda d: first_seen.get(d.key, ""),
                         reverse=True)
-        new = recent[:8]
+        new = email_new = recent[:8]
         new_keys = {d.key for d in new}
         print(f"  [test] standing in {len(new)} recent dogs as new")
 
     send_failed = False
-    picks = top_picks(dogs)
-    labs = [d for d in picks if d.source == "Labs4rescue"]
-    picks_non_lab = [d for d in picks if d.source != "Labs4rescue"]
+    picks = top_picks(emailable)
+    # By breed, matching the page's "Top labs" button. This used to mean "dogs
+    # from Labs4rescue"; the two sections stay disjoint as they were then.
+    labs = [d for d in picks if d.is_lab]
+    picks_non_lab = [d for d in picks if not d.is_lab]
 
     DOCS.mkdir(exist_ok=True)
     # Without this, GitHub Pages runs the folder through Jekyll, which builds
@@ -487,8 +503,8 @@ def main() -> int:
     elif args.reset:
         print(f"Baseline reset to {len(dogs)} dogs.")
     else:
-        subject = f"{len(new)} new doggo{'' if len(new)==1 else 's'} for you"
-        body = build_email(new, picks_non_lab, labs, len(dogs),
+        subject = f"{len(email_new)} new doggo{'' if len(email_new)==1 else 's'} for you"
+        body = build_email(email_new, picks_non_lab, labs, len(emailable),
                            os.environ.get("SITE_URL", ""), first_seen)
         (DOCS / "latest-email.html").write_text(body)
         if args.dry_run:
@@ -504,7 +520,8 @@ def main() -> int:
                 # leave seen.json alone, and exit non-zero so the failure is loud.
                 send_failed = True
                 print(f"  SEND FAILED: {type(e).__name__}: {e}", file=sys.stderr)
-        print(f"  new: {len(new)} | top dogs: {len(picks_non_lab)} | top labs: {len(labs)}")
+        print(f"  new: {len(email_new)} (+{len(new) - len(email_new)} off by default) "
+              f"| top dogs: {len(picks_non_lab)} | top labs: {len(labs)}")
 
     if send_failed:
         print("Email did not go out. Page still published; baseline NOT advanced, "

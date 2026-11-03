@@ -238,6 +238,9 @@ a{color:var(--accent)}
 
 <script>
 const DOGS = /*__DATA__*/[];
+// Rescues hidden from every preset and from Rescue → Any; shown only when
+// picked by name. Set in digest.py (OFF_BY_DEFAULT), which says why.
+const OFF = new Set(/*__OFF__*/[]);
 const NEW_DAYS = +"__NEWDAYS__" || 7;
 const MAX_LB = 60, MAX_YR = 5, PUPPY_YR = 1;
 
@@ -306,7 +309,7 @@ const PRESETS = {
 };
 
 function matches(d, f){
-  if(f["f-source"] && d.s !== f["f-source"]) return false;
+  if(f["f-source"] ? d.s !== f["f-source"] : OFF.has(d.s)) return false;
   if(f["f-weight"] && !sizeOk(d, +f["f-weight"])) return false;
   if(f["f-age"]    && !ageOk(d, +f["f-age"]))     return false;
   if(f["f-sex"]    && (d.sex||"").toLowerCase() !== f["f-sex"]) return false;
@@ -433,8 +436,11 @@ function render(){
   grid.replaceChildren(...list.map(card));
   empty.hidden = list.length > 0;
   const off = list.filter(d => hidden.has(dogId(d))).length;
-  countEl.textContent = off ? `${list.length - off} of ${DOGS.length} · ${off} hidden`
-                            : `${list.length} of ${DOGS.length}`;
+  // "of N" counts only dogs this view could show, so "All dogs" reads N of N
+  // rather than implying a filter is quietly holding some back.
+  const total = DOGS.filter(d => !OFF.has(d.s) || d.s === f["f-source"]).length;
+  countEl.textContent = off ? `${list.length - off} of ${total} · ${off} hidden`
+                            : `${list.length} of ${total}`;
 
   // light up whichever preset this exactly equals
   document.querySelectorAll('[data-preset]').forEach(p=>{
@@ -452,8 +458,11 @@ CHECKS.forEach(id => blank[id] = false);
 
 // populate the rescue dropdown from the data itself
 [...new Set(DOGS.map(d=>d.s))].sort().forEach(s=>{
-  const o=document.createElement('option'); o.value=o.textContent=s; $('f-source').append(o);
+  const o=document.createElement('option'); o.value=s;
+  o.textContent = OFF.has(s) ? `${s} (off by default)` : s;
+  $('f-source').append(o);
 });
+if(OFF.size) $('f-source').options[0].textContent = `Any except ${[...OFF].sort().join(', ')}`;
 
 // preset counts
 document.querySelectorAll('[data-preset]').forEach(p=>{
